@@ -1,0 +1,64 @@
+---
+- name: Download cirros image
+  get_url:
+    url: http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img
+    dest: /home/stack/cirros-0.5.1-x86_64-disk.img
+    mode: '0777'
+
+- name: upload image
+  os_image:
+    cloud: "{{ cloud_name }}"
+    name: cirros
+    container_format: bare
+    disk_format: qcow2
+    state: present
+    filename: /home/stack/cirros-0.5.1-x86_64-disk.img
+
+- name: create flavor
+  os_nova_flavor:
+    cloud: "{{ cloud_name }}"
+    state: present
+    name: m1-micro
+    ram: 300
+    vcpus: 1
+    disk: 1
+
+- name: launch an instance
+  os_server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network: "{{ private_network_name }}"
+    name: cirros-vm-private
+    image: cirros
+    flavor: m1-micro
+    key_name: uc-key
+    security_groups: ssh_icmp
+
+- name: launch an instance in internal network
+  os_server:
+    cloud: "{{ cloud_name }}"
+    state: present
+    network: "{{ internal_network_name }}"
+    name: cirros-vm-internal
+    image: cirros
+    flavor: m1-micro
+    key_name: uc-key
+    security_groups: ssh_icmp
+
+- name: Assign floating ip to cirros-vm-private
+  os_floating_ip:
+    cloud: "{{ cloud_name }}"
+    state: present
+    server: cirros-vm-private
+    network: "{{ floating_network_name }}"
+    wait: true
+    reuse: true
+
+- name: Assign floating ip to cirros-vm-internal
+  os_floating_ip:
+    cloud: "{{ cloud_name }}"
+    state: present
+    server: cirros-vm-internal
+    network: "{{ floating_network_name }}"
+    wait: true
+    reuse: true
