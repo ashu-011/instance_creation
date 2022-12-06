@@ -54,7 +54,7 @@
     wait: true
     reuse: true
 
-- name: Assign floating ip to cirros-vm-internal
+- name: Assigning floating ip to cirros-vm-internal
   os_floating_ip:
     cloud: "{{ cloud_name }}"
     state: present
